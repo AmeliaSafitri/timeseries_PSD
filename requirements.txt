@@ -3,4 +3,4 @@ pandas
 matplotlib
 joblib
 scikit-learn
-statsmodels  <-- INI PUSTAKA YANG HILANG
+statsmodels
