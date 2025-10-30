@@ -1,17 +1,15 @@
 # ==========================================================
-# app.py (VERSI TANPA SIDEBAR)
-# Sistem Prediksi NO2 berbasis Random Forest
+# app.py (FINAL VERSION - LENGKAP)
 # ==========================================================
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 import os
 import model_utils as mu
 from datetime import date, timedelta
 import joblib
 
 # --- KONFIGURASI STREAMLIT ---
-# Menggunakan layout "wide" untuk memaksimalkan ruang
 st.set_page_config(
     page_title="Sistem Prediksi NO2",
     layout="wide" 
@@ -26,10 +24,11 @@ def load_or_train_model(file_path, n_lags, test_size):
     
     try:
         # Latih ulang untuk memastikan fitur terbaru
-        results = mu.prepare_and_train_all(file_path, n_lags, test_size)
+        results = mu.prepare_and_train_all(file_path, n_lags, test_size) 
         return results['rf_model'], results['full_df'], results['last_data'], results['metrics_rf']
 
     except Exception as e:
+        # Menampilkan pesan error yang lebih spesifik
         st.error(f"Sistem tidak dapat berjalan. Pastikan file '{file_path}' ada dan formatnya benar. Error: {e}")
         return None, None, None, None
 
@@ -46,7 +45,6 @@ N_LAGS = mu.N_LAGS
 TEST_SIZE = mu.TEST_SIZE_DAYS
 
 # --- Memuat/Melatih Model di Badan Utama ---
-# Menggunakan spinner agar loading terlihat jelas
 with st.spinner("Memuat dan melatih model..."):
     rf_model, full_data, last_data, metrics = load_or_train_model(DATA_FILE, N_LAGS, TEST_SIZE)
 
@@ -54,7 +52,8 @@ if rf_model is None:
     st.error("Model Gagal Dimuat/Dilatih. Aplikasi dihentikan.")
     st.stop()
 
-st.success("Model Random Forest siap digunakan.")
+# Tampilkan status keberhasilan
+st.success(f"Model Random Forest siap digunakan. Data historis terakhir: {last_data.index[-1].date()}")
 
 # Ambil tanggal terakhir historis
 last_historical_date = last_data.index[-1].date()
@@ -77,7 +76,7 @@ with col2:
     st.metric(
         label="ACF Residuals (Lag 1)",
         value=f"{metrics['acf']:.4f}",
-        help="Autokorelasi Residual pada lag 1. Nilai mendekati nol menunjukkan model baik menangkap pola."
+        help="Autokorelasi Residual pada lag 1. Nilai mendekati nol menunjukkan autokorelasi rendah (model baik menangkap pola)."
     )
 
 st.markdown("---")
@@ -102,7 +101,8 @@ with input_container:
             disabled=True,
             key="start_date_fixed" 
         )
-        st.markdown(f"**Data Historis Terakhir:** `{last_historical_date}`") # Tampilkan info ini di sini
+        # Menampilkan info historis terakhir di sini
+        st.markdown(f"**Data Historis Terakhir:** `{last_historical_date}`") 
 
     # Tanggal Akhir
     with col_end:
@@ -150,7 +150,7 @@ if st.button(f"🚀 Mulai Prediksi NO₂ untuk {days_to_forecast} Hari (Hingga {
     
     # Tambahkan kolom level kualitas udara (Contoh Sederhana)
     def quality_level(no2):
-        if no2 < 40: return "Baik"
+        if no2 < 40: return "Baik (Good)"
         elif no2 < 80: return "Sedang (Moderate)"
         else: return "Tidak Sehat (Unhealthy)"
     
